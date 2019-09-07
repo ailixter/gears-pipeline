@@ -1,0 +1,20 @@
+{
+    "name": "ailixter/gears-pipeline",
+    "description": "The project that gears pipelines.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ailixter",
+            "email": "ailixter@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Ailixter\\Gears\\": "./src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^7.1"
+    }
+}

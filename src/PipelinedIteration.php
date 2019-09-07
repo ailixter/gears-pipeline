@@ -34,9 +34,16 @@ class PipelinedIteration
      * @var Closure[]
      */
     private $handlers = [];
+    private $handlersFinished;
 
-    protected function addHandler(callable $handler): self
+    protected function addHandler(callable $handler, $final = false): self
     {
+        if ($this->handlersFinished) {
+            throw new \RuntimeException("handlers chain finished by {$this->handlersFinished}");
+        }
+        if ($final) {
+            $this->handlersFinished = $final;
+        }
         $this->handlers[] = $handler;
         return $this;
     }
@@ -55,7 +62,7 @@ class PipelinedIteration
         }
         return $this->addHandler(static function (array $args) use ($fn): array {
             if (!$fn(...$args)) {
-                return [null, true];
+                return [null, self::CONTINUE];
             }
             if (count($args) === 1) {
                 return [$args[0], false];
@@ -78,10 +85,43 @@ class PipelinedIteration
         return $this->addHandler(function (array $args) use ($fn): array {
             $this->result = $fn($this->result, ...$args);
             return [null, self::CONTINUE];
-        });
+        }, __function__);
     }
 
-    // TODO find, some, every
+    public function find(callable $fn): self
+    {
+        return $this->addHandler(function (array $args) use ($fn): array {
+            if ($fn(...$args)) {
+                $this->result = count($args) === 1 ? $args[0] : $args;
+                return [null, self::BREAK];
+            }
+            return [null, self::CONTINUE];
+        }, __function__);
+    }
+
+    public function some(callable $fn): self
+    {
+        $this->initResult(false);
+        return $this->addHandler(function (array $args) use ($fn): array {
+            if ($fn(...$args)) {
+                $this->result = true;
+                return [null, self::BREAK];
+            }
+            return [null, self::CONTINUE];
+        }, __function__);
+    }
+
+    public function every(callable $fn): self
+    {
+        $this->initResult(true);
+        return $this->addHandler(function (array $args) use ($fn): array {
+            if (!$fn(...$args)) {
+                $this->result = false;
+                return [null, self::BREAK];
+            }
+            return [null, self::CONTINUE];
+        }, __function__);
+    }
 
     private $initial = [];
     private $result;

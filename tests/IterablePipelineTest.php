@@ -48,6 +48,61 @@ class IterablePipelineTest extends TestCase
         $this->assertEquals(132, $result);
     }
 
+    public function testFind()
+    {
+        $result = PipelinedIteration::over(
+            [1, 2],
+            [3, 4],
+            [5, 6],
+            [7, 8]
+        )
+        ->map(function ($a, $b, $c, $d) {
+            return [$a + $b, $c + $d];
+        })
+        ->find(function ($x, $y) {
+            return $x * $y > 48;
+        })
+        ->getResult();
+        // print_r($result);
+        $this->assertEquals([6, 14], $result);
+    }
+
+    public function testSome()
+    {
+        $result = PipelinedIteration::over(
+            [1, 2],
+            [3, 4],
+            [5, 6],
+            [7, 8]
+        )
+        ->map(function ($a, $b, $c, $d) {
+            return [$a + $b, $c + $d];
+        })
+        ->some(function ($x, $y) {
+            return $x * $y > 48;
+        })
+        ->getResult();
+        $this->assertTrue($result);
+    }
+
+    public function testEvery()
+    {
+        $result = PipelinedIteration::over(
+            [1, 2],
+            [3, 4],
+            [5, 6],
+            [7, 8]
+        )
+        ->map(function ($a, $b, $c, $d) {
+            return [$a + $b, $c + $d];
+        })
+        ->every(function ($x, $y) {
+            return $x * $y > 1;
+        })
+        ->getResult();
+        $this->assertTrue($result);
+    }
+
     public function testIterator()
     {
         $path = realpath(__dir__ . '/..');

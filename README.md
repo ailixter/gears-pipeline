@@ -1,6 +1,9 @@
 # gears-pipeline
 The project that gears pipelines.
 
+it runs a chain of handlers over iterables (iterators, generators, arrays).
+the processing is memory efficient, no intermediate arrays are used.
+
 ```php
     echo PipelinedIteration::over(
         [1, 2],
@@ -16,3 +19,12 @@ The project that gears pipelines.
     })
     ->getResult(); // 132
 ```
+
+## implemented handlers
+
+- ``map(callable)``
+- ``filter(callable)``
+- ``reduce(callable, mixed = 0)``
+- ``find(callable)``
+- ``some(callable)``
+- ``every(callable)``

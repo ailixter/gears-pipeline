@@ -61,13 +61,7 @@ class PipelinedIteration
             $fn = [$this, 'isTruish'];
         }
         return $this->addHandler(static function (array $args) use ($fn): array {
-            if (!$fn(...$args)) {
-                return [null, self::CONTINUE];
-            }
-            if (count($args) === 1) {
-                return [$args[0], false];
-            }
-            return [$args, false];
+            return $fn(...$args) ? [$args, false] : [null, self::CONTINUE];
         });
     }
 
@@ -175,13 +169,18 @@ class PipelinedIteration
         return $generators;
     }
 
+    protected function getRowItem(\Iterator $data)
+    {
+        return $data->current();
+    }
+
     private function itemsRow(array $iterators): ?array
     {
         $items = [];
         $nulls = count($iterators);
         foreach ($iterators as $data) {
             if ($data->valid()) {
-                $items[] = $data->current();
+                $items[] = $this->getRowItem($data);
                 $data->next();
                 continue;
             }
